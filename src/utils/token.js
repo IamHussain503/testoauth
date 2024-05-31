@@ -1,0 +1,30 @@
+// src/utils/token.js
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcrypt');
+const AuthCode = require('../models/AuthCode');
+const Token = require('../models/Token');
+const Client = require('../models/Client');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const generateAuthCode = async (client_id) => {
+    const code = uuidv4();
+    const expire_time = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await AuthCode.create({ client_id, code, expire_time });
+    return code;
+};
+
+const generateTokens = async (client_id) => {
+    const access_token = jwt.sign({ client_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const refresh_token = uuidv4();
+    const expire_time = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+    await Token.create({ client_id, access_token, refresh_token, expire_time });
+    return { access_token, refresh_token, expire_time };
+};
+
+module.exports = {
+    generateAuthCode,
+    generateTokens,
+};
