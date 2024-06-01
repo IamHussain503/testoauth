@@ -3,7 +3,10 @@ const router = express.Router();
 const clientController = require('../controllers/clientController');
 const customEndpointController = require('../controllers/customEndpointController');
 const roleCredentialsController = require('../controllers/roleCredentialsController');
-const { oauth } = require('../models/oauth');
+const { Request, Response } = require('../models/oauth');
+const oauth = require('../models/oauth').oauth;
+
+
 
 router.post('/v1/register', clientController.registerClient);
 router.get('/v1/authorize', (req, res, next) => {
@@ -16,6 +19,7 @@ router.get('/v1/authorize', (req, res, next) => {
             }
         }
     }).then(code => {
+        res.locals.code = code;
         next();
     }).catch(err => {
         res.status(500).json({ message: err.message });

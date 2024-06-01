@@ -8,14 +8,16 @@ const AuthCode = require('./AuthCode');
 const oauth = new OAuth2Server({
     model: {
         getClient: async (clientId, clientSecret) => {
-            const client = await Client.findOne({ client_id: clientId, client_secret: clientSecret });
+            const query = clientSecret ? { client_id: clientId, client_secret: clientSecret } : { client_id: clientId };
+            const client = await Client.findOne(query);
+            console.log(`getClient - Client ID: ${clientId}, Client Secret: ${clientSecret}, Found: ${client ? 'Yes' : 'No'}`);
             if (!client) return null;
             return {
                 id: client._id,
                 clientId: client.client_id,
                 clientSecret: client.client_secret,
                 grants: ['authorization_code', 'refresh_token'],
-                redirectUris: null
+                redirectUris: [client.redirect_uri]
             };
         },
         saveAuthorizationCode: async (code, client, user) => {
@@ -44,7 +46,7 @@ const oauth = new OAuth2Server({
                     clientId: client.client_id
                 },
                 expiresAt: authCode.expire_time,
-                redirectUri: null,
+                redirectUri: authCode.redirect_uri,
                 user: {
                     id: authCode.user_id
                 }

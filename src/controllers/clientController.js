@@ -1,12 +1,12 @@
 const Client = require('../models/Client');
-const { hashPassword } = require('../utils/hash');
 const { oauth, Request, Response } = require('../models/oauth');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+const { hashPassword } = require('../utils/hash');
 
 exports.registerClient = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, redirect_uri } = req.body;
         const hashedPassword = await hashPassword(password);
         const client_id = uuidv4();
         const client_secret = uuidv4();
@@ -16,14 +16,16 @@ exports.registerClient = async (req, res) => {
             email,
             password: hashedPassword,
             client_id,
-            client_secret
+            client_secret,
+            redirect_uri
         });
 
         res.status(201).json({
             token: jwt.sign({ client_id }, process.env.JWT_SECRET),
             name: client.name,
             client_id: client.client_id,
-            client_secret: client.client_secret
+            client_secret: client.client_secret,
+            redirect_uri: client.redirect_uri
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -32,7 +34,7 @@ exports.registerClient = async (req, res) => {
 
 exports.authorizeClient = async (req, res) => {
     try {
-        const { client_id, redirect_uri, response_type, scope } = req.query;
+        const { client_id, redirect_uri, response_type, scope, state } = req.query;
         if (response_type !== 'code') {
             return res.status(400).json({ message: 'Invalid response_type' });
         }
@@ -42,25 +44,34 @@ exports.authorizeClient = async (req, res) => {
             return res.status(404).json({ message: 'Client not found' });
         }
 
+        const authorizationCode = res.locals.code.authorizationCode;
+        const redirectUrl = new URL(redirect_uri);
+        redirectUrl.searchParams.append('code', authorizationCode);
+        redirectUrl.searchParams.append('scope', scope);
+        if (state) {
+            redirectUrl.searchParams.append('state', state);
+        }
+
+        res.redirect(redirectUrl.toString());
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+
+
+
+exports.generateToken = async (req, res) => {
+    try {
         const request = new Request(req);
         const response = new Response(res);
-        oauth.authorize(request, response).then((authorizationCode) => {
-            res.redirect(`${redirect_uri}?code=${authorizationCode.authorizationCode}&scope=${scope}`);
+
+        oauth.token(request, response).then((token) => {
+            res.status(200).json(token);
         }).catch((err) => {
             res.status(500).json({ message: err.message });
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
-};
-
-exports.generateToken = async (req, res) => {
-    const request = new Request(req);
-    const response = new Response(res);
-
-    oauth.token(request, response).then((token) => {
-        res.status(200).json(token);
-    }).catch((err) => {
-        res.status(500).json({ message: err.message });
-    });
 };
