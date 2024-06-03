@@ -26,23 +26,26 @@ router.get('/v1/authorize', (req, res, next) => {
     });
 }, clientController.authorizeClient);
 router.post('/v1/token', clientController.generateToken);
+
 router.post('/v1/custom_endpoint', (req, res, next) => {
+    // console.log('req', req)
     const request = new Request(req);
     const response = new Response(res);
-    oauth.authenticate(request, response).then(token => {
-        next();
-    }).catch(err => {
-        res.status(500).json({ message: err.message });
-    });
+    next();
+    // oauth.authenticate(request, response).then(token => {
+    //     next();
+    // }).catch(err => {
+    //     res.status(500).json({ message: err.message });
+    // });
 }, customEndpointController.customEndpoint);
 router.post('/v1/role_credentials', (req, res, next) => {
     const request = new Request(req);
     const response = new Response(res);
-    oauth.authenticate(request, response).then(token => {
-        next();
-    }).catch(err => {
-        res.status(500).json({ message: err.message });
-    });
+    next();
+    // oauth.authenticate(request, response).then(token => {
+    // }).catch(err => {
+    //     res.status(500).json({ message: err.message });
+    // });
 }, roleCredentialsController.updateCredentials);
 
 module.exports = router;
