@@ -115,9 +115,10 @@ const oauth = new OAuth2Server({
             return result.deletedCount > 0;
         }
     },
-    accessTokenLifetime: 60 * 60 * 24, // 24 hours, or 1 day
-    allowEmptyState: true,
-    allowExtendedTokenAttributes: true,
+    accessTokenLifetime: 3600,
+    allowBearerTokensInQueryString: true,
+    // allowEmptyState: true,
+    // allowExtendedTokenAttributes: true,
 });
 
 
