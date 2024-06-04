@@ -9,9 +9,9 @@ const oauth = new OAuth2Server({
     model: {
         getClient: async (clientId, clientSecret) => {
             const query = clientSecret ? { client_id: clientId, client_secret: clientSecret } : { client_id: clientId };
-            console.log(`Querying client with ID: ${clientId} and Secret: ${clientSecret}`);
+            // console.log(`Querying client with ID: ${clientId} and Secret: ${clientSecret}`);
             const client = await Client.findOne(query);
-            console.log(`getClient - Client ID: ${clientId}, Client Secret: ${clientSecret}, Found: ${client ? 'Yes' : 'No'}`);
+            // console.log(`getClient - Client ID: ${clientId}, Client Secret: ${clientSecret}, Found: ${client ? 'Yes' : 'No'}`);
             if (!client) return null;
             return {
                 id: String(client._id),
@@ -29,7 +29,7 @@ const oauth = new OAuth2Server({
                 expire_time: code.expiresAt,
                 redirect_uri: code.redirectUri // Ensure this is stored
             });
-            console.log(`saveAuthorizationCode - code: ${code.authorizationCode}, client: ${client.clientId}, user: ${user.id}`);
+            // console.log(`saveAuthorizationCode - code: ${code.authorizationCode}, client: ${client.clientId}, user: ${user.id}`);
             return {
                 authorizationCode: authCode.code,
                 expiresAt: authCode.expire_time,
@@ -42,7 +42,7 @@ const oauth = new OAuth2Server({
             const authCode = await AuthCode.findOne({ code: authorizationCode });
             if (!authCode) return null;
             const client = await Client.findOne({ client_id: authCode.client_id });
-            console.log(`getAuthorizationCode - authorizationCode: ${authorizationCode}, authCode: ${JSON.stringify(authCode)}`);
+            // console.log(`getAuthorizationCode - authorizationCode: ${authorizationCode}, authCode: ${JSON.stringify(authCode)}`);
             return {
                 authorizationCode: authCode.code,
                 expiresAt: authCode.expire_time,
@@ -68,7 +68,7 @@ const oauth = new OAuth2Server({
                 refresh_token: token.refreshToken,
                 expire_time: token.accessTokenExpiresAt
             });
-            console.log(`saveToken - accessToken: ${token.accessToken}, client: ${client.clientId}, user: ${user.id}`);
+            // console.log(`saveToken - accessToken: ${token.accessToken}, client: ${client.clientId}, user: ${user.id}`);
             return {
                 accessToken: accessToken.access_token,
                 accessTokenExpiresAt: accessToken.expire_time,
