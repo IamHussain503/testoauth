@@ -24,7 +24,7 @@ exports.registerClient = async (req, res) => {
         });
 
         res.status(201).json({
-            token: jwt.sign({ client_id }, process.env.JWT_SECRET, { expiresIn: "1h" }),
+            token: jwt.sign({ client_id }, process.env.JWT_SECRET, { expiresIn: "3600s" }),
             name: client.name,
             client_id: client.client_id,
             client_secret: client.client_secret,
