@@ -30,7 +30,7 @@ exports.customEndpoint = async (req, res) => {
     try {
         // Use the token from the authenticated middleware
         const token = req.token;
-        console.log('Authenticated token:', token);
+        // console.log('Authenticated token:', token);
 
         // Forward the request to the third-party API with the Authorization header
         const thirdPartyResponse = await axios.post('https://third-party-api.com/endpoint', req.body, {
