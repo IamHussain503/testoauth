@@ -7,7 +7,6 @@ const { Request, Response } = require('../models/oauth');
 const oauth = require('../models/oauth').oauth;
 
 
-
 router.post('/v1/register', clientController.registerClient);
 router.get('/v1/authorize', (req, res, next) => {
     const request = new Request(req);
@@ -27,25 +26,38 @@ router.get('/v1/authorize', (req, res, next) => {
 }, clientController.authorizeClient);
 router.post('/v1/token', clientController.generateToken);
 
-router.post('/v1/custom_endpoint', (req, res, next) => {
-    // console.log('req', req)
-    const request = new Request(req);
-    const response = new Response(res);
-    next();
-    // oauth.authenticate(request, response).then(token => {
-    //     next();
-    // }).catch(err => {
-    //     res.status(500).json({ message: err.message });
-    // });
+router.post('/v1/custom_endpoint', async (req, res, next) => {
+    try {
+        const request = new Request(req);
+        const response = new Response(res);
+        const token = await oauth.authenticate(request, response);
+        console.log('token', token)
+        // Attach user and token info to req object if needed
+        req.user = token.user;
+        req.token = token;
+
+        next();
+    } catch (err) {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
 }, customEndpointController.customEndpoint);
-router.post('/v1/role_credentials', (req, res, next) => {
-    const request = new Request(req);
-    const response = new Response(res);
-    next();
-    // oauth.authenticate(request, response).then(token => {
-    // }).catch(err => {
-    //     res.status(500).json({ message: err.message });
-    // });
+
+router.post('/v1/role_credentials', async (req, res, next) => {
+    try {
+        const request = new Request(req);
+        const response = new Response(res);
+        const token = await oauth.authenticate(request, response);
+        req.clientId = token.client.clientId;
+        next();
+        // oauth.authenticate(request, response).then(token => {
+        // }).catch(err => {
+        //     res.status(500).json({ message: err.message });
+        // });
+    } catch (error) {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+
 }, roleCredentialsController.updateCredentials);
+
 
 module.exports = router;

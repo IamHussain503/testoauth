@@ -20,9 +20,9 @@ const generateAuthCode = async (client_id) => {
 const generateTokens = async (client_id) => {
     const access_token = jwt.sign({ client_id }, process.env.JWT_SECRET, { expiresIn: "3600s" }); // Expires in 3600 seconds (1 hour)
     const refresh_token = crypto.randomBytes(32).toString('hex');
-    const expire_time = Math.floor(Date.now() / 1000) + 3600; // Expiration time in seconds (3600 seconds = 1 hour)
+    const expire_time = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
     await Token.create({ client_id, access_token, refresh_token, expire_time });
-    return { access_token, refresh_token, expire_time };
+    return { access_token, refresh_token, expire_time: expire_time.getTime() / 1000 }
 };
 
 module.exports = {

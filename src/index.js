@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const routes = require('./routes');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 
 dotenv.config();
 
@@ -21,6 +21,9 @@ mongoose.connect(process.env.MONGO_URI, {
     console.error('Error connecting to MongoDB:', err.message);
 
 });
+// const client_id = "323bjbnjdsdsdsdb3j23j2jk3232"
+// const accessToken = jwt.sign({ client_id }, "std3T1hOIBZAGUME7qPk9hxmP7kZ2Uue", { expiresIn: '1h' })
+// console.log('accesstoken', accessToken)
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

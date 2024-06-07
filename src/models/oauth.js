@@ -117,8 +117,8 @@ const oauth = new OAuth2Server({
     },
     accessTokenLifetime: 3600,
     allowBearerTokensInQueryString: true,
-    // allowEmptyState: true,
-    // allowExtendedTokenAttributes: true,
+    allowEmptyState: true,
+    allowExtendedTokenAttributes: true,
 });
 
 

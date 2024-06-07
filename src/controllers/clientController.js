@@ -24,11 +24,10 @@ exports.registerClient = async (req, res) => {
         });
 
         res.status(201).json({
-            token: jwt.sign({ client_id }, process.env.JWT_SECRET, { expiresIn: "3600s" }),
+            token: jwt.sign({ client_id }, process.env.JWT_SECRET, { expiresIn: "1h" }),
             name: client.name,
             client_id: client.client_id,
             client_secret: client.client_secret,
-            redirect_uri: client.redirect_uri
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -109,7 +108,14 @@ exports.generateToken = async (req, res) => {
         const request = new Request(req);
         const response = new Response(res);
         oauth.token(request, response).then((token) => {
-            res.status(200).json(token);
+            const expire_time = Math.floor(token.accessTokenExpiresAt.getTime() / 1000); // UNIX timestamp in seconds
+            const formattedResponse = {
+                access_token: token.accessToken,
+                refresh_token: token.refreshToken,
+                expire_time: expire_time,
+                id: token.client.id
+            };
+            res.status(200).json(formattedResponse);
         }).catch((err) => {
             console.error('Token generation error:', err);
             res.status(500).json({ message: err.message });
