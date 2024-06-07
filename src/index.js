@@ -3,12 +3,26 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const routes = require('./routes');
 // const jwt = require('jsonwebtoken');
+const bodyParser = require('body-parser');
 
 dotenv.config();
 
 const app = express();
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
+// const bodyParser = require('body-parser');
+// app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+function jsonToUrlencoded(req, res, next) {
+    if (req.is('application/json')) {
+        const urlEncodedBody = new URLSearchParams(req.body).toString();
+        req.headers['content-type'] = 'application/x-www-form-urlencoded';
+        req.rawBody = urlEncodedBody;
+    }
+    next();
+}
+
+app.use(jsonToUrlencoded);
 app.use(express.json());
 app.use('/api', routes);
 
@@ -21,9 +35,6 @@ mongoose.connect(process.env.MONGO_URI, {
     console.error('Error connecting to MongoDB:', err.message);
 
 });
-// const client_id = "323bjbnjdsdsdsdb3j23j2jk3232"
-// const accessToken = jwt.sign({ client_id }, "std3T1hOIBZAGUME7qPk9hxmP7kZ2Uue", { expiresIn: '1h' })
-// console.log('accesstoken', accessToken)
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
