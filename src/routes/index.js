@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/clientController');
+const merchantController = require('../controllers/merchantController');
 const customEndpointController = require('../controllers/customEndpointController');
 const roleCredentialsController = require('../controllers/roleCredentialsController');
 const { Request, Response } = require('../models/oauth');
@@ -24,6 +25,10 @@ router.get('/v1/authorize', (req, res, next) => {
         res.status(500).json({ message: err.message });
     });
 }, clientController.authorizeClient);
+
+router.get('/v1/login', merchantController.loginPage);
+router.post('/v1/login', merchantController.login);
+
 router.post('/v1/token', clientController.generateToken);
 
 router.post('/v1/custom_endpoint', async (req, res, next) => {

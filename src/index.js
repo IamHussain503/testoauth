@@ -8,11 +8,26 @@ const bodyParser = require('body-parser');
 dotenv.config();
 
 const app = express();
-// const bodyParser = require('body-parser');
-// app.use(bodyParser.urlencoded({ extended: false }));
+
+
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+// function jsonToUrlencoded(req, res, next) {
+//     if (req.is('application/json')) {
+//         const urlEncodedBody = new URLSearchParams(req.body).toString();
+//         req.headers['content-type'] = 'application/x-www-form-urlencoded';
+//         req.rawBody = urlEncodedBody;
+//     }
+//     next();
+// }
+
+// app.use(jsonToUrlencoded);
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Custom middleware to handle JSON to URL-encoded conversion if needed
 function jsonToUrlencoded(req, res, next) {
     if (req.is('application/json')) {
         const urlEncodedBody = new URLSearchParams(req.body).toString();
