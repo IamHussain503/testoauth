@@ -9,7 +9,10 @@ const oauth = require('../models/oauth').oauth;
 
 
 router.post('/v1/register', clientController.registerClient);
-router.get('/v1/authorize', (req, res, next) => {
+router.get('/v1/authorize', clientController.authorizeClient);
+
+router.get('/v1/login', merchantController.loginPage);
+router.post('/v1/login', (req, res, next) => {
     const request = new Request(req);
     const response = new Response(res);
     oauth.authorize(request, response, {
@@ -19,15 +22,14 @@ router.get('/v1/authorize', (req, res, next) => {
             }
         }
     }).then(code => {
+        // console.log('code', code)
         res.locals.code = code;
         next();
     }).catch(err => {
         res.status(500).json({ message: err.message });
     });
-}, clientController.authorizeClient);
+}, merchantController.login);
 
-router.get('/v1/login', merchantController.loginPage);
-router.post('/v1/login', merchantController.login);
 
 router.post('/v1/token', clientController.generateToken);
 

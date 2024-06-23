@@ -1,161 +1,22 @@
-// src/controllers/merchantController.js
+const { default: axios } = require('axios');
 const Merchant = require('../models/Merchant');
-const axios = require('axios');
-const { v4: uuidv4 } = require('uuid');
-
-
-// exports.loginPage = async (req, res) => {
-//     try {
-//         const { client_id, redirect_uri, response_type, state } = req.query;
-
-//         res.send(`
-//             <!DOCTYPE html>
-//             <html lang="en">
-//             <head>
-//                 <meta charset="UTF-8">
-//                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//                 <title>Login Page</title>
-//                 <!-- Bootstrap CSS -->
-//                 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-//                 <style>
-//                     body {
-//                         background-color: #f8f9fa;
-//                     }
-//                     .vertical-center {
-//                         min-height: 100vh;
-//                         display: flex;
-//                         align-items: center;
-//                         justify-content: center;
-//                     }
-//                 </style>
-//             </head>
-//             <body>
-//                 <div class="vertical-center">
-//                     <div class="container">
-//                         <div class="row justify-content-center">
-//                             <div class="col-md-6">
-//                                 <div class="card">
-//                                     <div class="card-header">Login</div>
-//                                     <div class="card-body">
-//                                         <form method="POST" action="/api/v1/login">
-//                                             <input type="hidden" name="client_id" value="${client_id}" />
-//                                             <input type="hidden" name="redirect_uri" value="${redirect_uri}" />
-//                                             <input type="hidden" name="response_type" value="${response_type}" />
-//                                             <input type="hidden" name="state" value="${state}" />
-//                                             <div class="form-group">
-//                                                 <label for="email">Email</label>
-//                                                 <input type="email" id="email" name="email" class="form-control" required>
-//                                             </div>
-//                                             <div class="form-group">
-//                                                 <label for="password">Password</label>
-//                                                 <input type="password" id="password" name="password" class="form-control" required>
-//                                             </div>
-//                                             <button type="submit" class="btn btn-primary w-100">Login</button>
-//                                         </form>
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>
-
-//                 <!-- Bootstrap JS (optional) -->
-//                 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-//             </body>
-//             </html>
-//         `);
-//     } catch (err) {
-//         res.status(500).json({ message: err.message });
-//     }
-// };
-
-exports.loginPage = async (req, res) => {
-    try {
-        const { client_id, redirect_uri, response_type, state } = req.query;
-
-        res.send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Login Page</title>
-                <!-- Bootstrap CSS -->
-                <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-                <style>
-                    body {
-                        background-color: #f8f9fa;
-                    }
-                    .vertical-center {
-                        min-height: 100vh;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="vertical-center">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">Login</div>
-                                    <div class="card-body">
-                                        <form id="loginForm" action="/api/v1/login" method="POST">
-                                            <input type="hidden" name="client_id" value="${client_id}" />
-                                            <input type="hidden" name="redirect_uri" value="${redirect_uri}" />
-                                            <input type="hidden" name="response_type" value="${response_type}" />
-                                            <input type="hidden" name="state" value="${state}" />
-                                            <div class="form-group">
-                                                <label for="email">Email</label>
-                                                <input type="email" id="email" name="email" class="form-control" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="password">Password</label>
-                                                <input type="password" id="password" name="password" class="form-control" required>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary w-100">Login</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bootstrap JS (optional) -->
-                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-                <!-- Ajax script for login -->
-              
-            </body>
-            </html>
-        `);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-};
-
 
 exports.login = async (req, res) => {
-    console.log('Received request body:', req.body);
-    console.log('Received query parameters:', req.query);
+    const code = res.locals.code.authorizationCode
+    const { email, password, client_id, redirect_uri, response_type, state, scope } = req.body;
 
-    const { email, password, client_id, redirect_uri, response_type, state } = req.body;
 
-    if (!email || !password || !client_id || !redirect_uri || !response_type || !state) {
+    if (!email || !password || !client_id || !redirect_uri || !response_type || !state || !scope) {
         return res.status(400).json({ success: false, message: "Missing required parameters" });
     }
 
     try {
-        // Simulate third-party login API call
-        // Replace with actual API call if available
-        const response = await axios.post('https://devauth.free.beeceptor.com/v1/login', { email, password });
+        const response = await axios.post('https://oauth-test.free.beeceptor.com/login', { email, password });
         const rawData = response.data;
-
+        // console.log('rawData', rawData)
         let data;
         try {
-            data = JSON.parse(rawData);
+            data = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
         } catch (jsonParseError) {
             data = {
                 success: rawData.includes("'success': true"),
@@ -169,21 +30,22 @@ exports.login = async (req, res) => {
         const { success, message, merchant_id, merchant_group_id, merchant_name } = data;
 
         if (success) {
-            let merchant = await Merchant.findOneAndUpdate(
+
+            const merchant = await Merchant.findOneAndUpdate(
                 { merchant_id, client_id },
                 {
                     merchant_id,
                     merchant_group_id,
                     merchant_name,
                     client_id,
-                    $setOnInsert: { dateCreated: new Date() },
                     $currentDate: { dateModified: true },
-                    unique_code: uuidv4()
+                    code: code
+
                 },
                 { upsert: true, new: true }
             );
 
-            res.json({ success: true, message: "Login successful", code: merchant.unique_code, state });
+            res.json({ success: true, message: "Login successful", code: merchant.code, state, scope });
         } else {
             res.json({ success: false, message });
         }
@@ -194,71 +56,113 @@ exports.login = async (req, res) => {
 };
 
 
-// exports.login = async (req, res) => {
+exports.loginPage = async (req, res) => {
+    try {
+        const { client_id, redirect_uri, response_type, state, scope } = req.query;
 
-//     const { email, password } = req.body;
-//     const { client_id, state } = req.body;
+        res.send(`
+           <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <!-- jQuery (required by Bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .vertical-center {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="vertical-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Login</div>
+                        <div class="card-body">
+                            <form id="loginForm">
+                                <input type="hidden" name="client_id" value="${client_id}" />
+                                <input type="hidden" name="redirect_uri" value="${redirect_uri}" />
+                                <input type="hidden" name="response_type" value="${response_type}" />
+                                <input type="hidden" name="state" value="${state}" />
+                                <input type="hidden" name="scope" value="${scope}" />
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" id="password" name="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Login</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-//     if (!email || !password) {
-//         return res.status(400).json({ success: false, message: "Missing required parameters" });
-//     }
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
 
-//     try {
-//         // Make the POST request
-//         const response = await axios.post('https://devauth.free.beeceptor.com/v1/login', { email, password });
+            const form = event.target;
+            const formData = new FormData(form);
 
-//         // Ensure response data is valid JSON
-//         const rawData = response.data;
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
 
-//         // Fix JSON format if necessary
-//         let data;
-//         try {
-//             data = JSON.parse(rawData);
-//         } catch (jsonParseError) {
-//             // Attempt to manually construct a valid JSON object
-//             data = {
-//                 success: rawData.includes("'success': true"),
-//                 message: rawData.match(/'message': "(.*?)"/)?.[1],
-//                 merchant_id: rawData.match(/'merchant_id': '(\d+)'/)?.[1],
-//                 merchant_group_id: rawData.match(/'merchant_group_id': "(\d+)"/)?.[1],
-//                 merchant_name: rawData.match(/'merchant_name': "(.*?)"/)?.[1]
-//             };
-//         }
+            console.log("data", data);
 
-//         // Destructure the parsed JSON object
-//         const { success, message, merchant_id, merchant_group_id, merchant_name } = data;
+            try {
+                const response = await fetch('/api/v1/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
 
-//         if (success) {
-//             // Check if merchant already exists
-//             let merchant = await Merchant.findOne({ merchant_id, client_id });
-//             const unique_code = uuidv4();
+                const result = await response.json();
+                console.log("result", result);
 
-//             if (!merchant) {
-//                 // Create a new merchant entry
-//                 merchant = new Merchant({
-//                     merchant_id,
-//                     merchant_group_id,
-//                     merchant_name,
-//                     client_id,
-//                     unique_code
-//                 });
-//             } else {
-//                 // Update existing merchant details
-//                 merchant.unique_code = unique_code;
-//             }
+                if (result.success) {
+                    const { code, state ,scope } = result;
+                     alert(result.message)
+                      window.location.href = \`\${data?.redirect_uri}?code=\${code}&state=\${state}\&scope=\${scope}\`;
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Failed to login. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
+        `);
+    } catch (err) {
+        // Send the actual error message back
+        res.status(500).json({ message: err.message });
+    }
+};
 
-//             // Save the merchant
-//             await merchant.save();
-
-//             // Respond with success
-//             res.json({ success: true, message: "Login successful", code: unique_code, state });
-//         } else {
-//             res.json({ success: false, message });
-//         }
-//     } catch (error) {
-//         console.error('Login error:', error);
-//         res.status(500).json({ success: false, message: "Internal server error" });
-//     }
-// };
 
 

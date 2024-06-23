@@ -56,6 +56,7 @@ const oauth = new OAuth2Server({
                 }
             };
         },
+
         revokeAuthorizationCode: async (code) => {
             const result = await AuthCode.deleteOne({ code: code.authorizationCode });
             return result.deletedCount > 0;

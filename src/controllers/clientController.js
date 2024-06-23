@@ -6,6 +6,7 @@ const { oauth } = require('../models/oauth');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { hashPassword } = require('../utils/hash');
+const Merchant = require('../models/Merchant');
 
 exports.registerClient = async (req, res) => {
     try {
@@ -56,7 +57,7 @@ exports.registerClient = async (req, res) => {
 // };
 exports.authorizeClient = async (req, res) => {
     try {
-        const { client_id, redirect_uri, response_type, state } = req.query;
+        const { client_id, redirect_uri, response_type, state, scope } = req.query;
 
         if (response_type !== 'code') {
             return res.status(400).json({ message: 'Invalid response_type' });
@@ -68,13 +69,11 @@ exports.authorizeClient = async (req, res) => {
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        res.redirect(`/api/v1/login?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&response_type=${response_type}&state=${state}`);
+        res.redirect(`/api/v1/login?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&response_type=${response_type}&state=${state}&scope=${scope}`);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
-
-
 
 
 exports.generateToken = async (req, res) => {
