@@ -12,23 +12,24 @@ router.post('/v1/register', clientController.registerClient);
 router.get('/v1/authorize', clientController.authorizeClient);
 
 router.get('/v1/login', merchantController.loginPage);
-router.post('/v1/login', (req, res, next) => {
-    const request = new Request(req);
-    const response = new Response(res);
-    oauth.authorize(request, response, {
-        authenticateHandler: {
-            handle: req => {
-                return { id: req.query.client_id };
-            }
-        }
-    }).then(code => {
-        // console.log('code', code)
-        res.locals.code = code;
-        next();
-    }).catch(err => {
-        res.status(500).json({ message: err.message });
-    });
-}, merchantController.login);
+router.post('/v1/login', merchantController.login);
+// router.post('/v1/login', (req, res, next) => {
+//     const request = new Request(req);
+//     const response = new Response(res);
+//     oauth.authorize(request, response, {
+//         authenticateHandler: {
+//             handle: req => {
+//                 return { id: req.query.client_id };
+//             }
+//         }
+//     }).then(code => {
+//         // console.log('code', code)
+//         res.locals.code = code;
+//         next();
+//     }).catch(err => {
+//         res.status(500).json({ message: err.message });
+//     });
+// }, merchantController.login);
 
 
 router.post('/v1/token', clientController.generateToken);
@@ -54,17 +55,29 @@ router.post('/v1/role_credentials', async (req, res, next) => {
         const request = new Request(req);
         const response = new Response(res);
         const token = await oauth.authenticate(request, response);
+        console.log('token', token)
         req.clientId = token.client.clientId;
         next();
-        // oauth.authenticate(request, response).then(token => {
-        // }).catch(err => {
-        //     res.status(500).json({ message: err.message });
-        // });
+
     } catch (error) {
         res.status(401).json({ message: 'Unauthorized' });
     }
 
 }, roleCredentialsController.updateCredentials);
+
+router.post('/v1/merchant_credentials', async (req, res, next) => {
+    try {
+        const request = new Request(req);
+        const response = new Response(res);
+        const token = await oauth.authenticate(request, response);
+        req.clientId = token.client.clientId;
+        next();
+
+    } catch (error) {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+
+}, roleCredentialsController.merchantCredentials);
 
 
 module.exports = router;
