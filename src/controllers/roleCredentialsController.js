@@ -1,5 +1,6 @@
 const Client = require('../models/Client');
 const Merchant = require('../models/Merchant');
+const Token = require('../models/Token');
 const { generateTokens } = require('../utils/token');
 const { v4: uuidv4 } = require('uuid');
 
@@ -35,9 +36,10 @@ exports.updateCredentials = async (req, res) => {
     }
 };
 exports.merchantCredentials = async (req, res) => {
+
     try {
-        const clientId = req.clientId; // clientId should be set by middleware
-        const merchant = await Merchant.findOne({ client_id: clientId });
+        const accessToken = req.accessToken; // clientId should be set by middleware
+        const merchant = await Token.findOne({ access_token: accessToken });
 
         if (!merchant) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });

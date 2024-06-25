@@ -3,6 +3,20 @@ const { Request, Response } = require('../models/oauth');
 const oauth = require('../models/oauth').oauth;
 const Merchant = require('../models/Merchant');
 
+const generateRandom8DigitNumber = () => {
+    return Math.floor(10000000 + Math.random() * 90000000);
+};
+const generateFakeMerchantName = () => {
+    const merchantNames = [
+        "Crazy Merchant 1",
+        "Awesome Store",
+        "Happy Shop",
+        "Super Deals",
+        "Fantastic Goods"
+    ];
+    const randomIndex = Math.floor(Math.random() * merchantNames.length);
+    return merchantNames[randomIndex];
+};
 const mockAuthentication = async (email, password) => {
 
     // Simulate API response based on hardcoded credentials
@@ -10,9 +24,9 @@ const mockAuthentication = async (email, password) => {
         return {
             success: true,
             message: "Login successful",
-            merchant_id: '654123',
-            merchant_group_id: "234681",
-            merchant_name: "Crazy Merchant"
+            merchant_id: generateRandom8DigitNumber(),
+            merchant_group_id: generateRandom8DigitNumber(),
+            merchant_name: generateFakeMerchantName()
         };
     } else {
         return {
@@ -31,25 +45,8 @@ exports.login = async (req, res) => {
     }
 
     try {
-        // Call third-party API to authenticate and get merchant_id
-        // const apiResponse = await axios.post('https://oauth-test.free.beeceptor.com/login', { email, password });
-        // const rawData = apiResponse.data;
-        // let data;
 
-        // try {
-        //     data = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
-        // } catch (jsonParseError) {
-        //     data = {
-        //         success: rawData.includes("'success': true"),
-        //         message: rawData.match(/'message': "(.*?)"/)?.[1],
-        //         merchant_id: rawData.match(/'merchant_id': '(\d+)'/)?.[1],
-        //         merchant_group_id: rawData.match(/'merchant_group_id': "(\d+)"/)?.[1],
-        //         merchant_name: rawData.match(/'merchant_name': "(.*?)"/)?.[1]
-        //     };
-        // }
         const data = await mockAuthentication(email, password);
-
-
 
         const { success, message, merchant_id, merchant_group_id, merchant_name } = data;
 
@@ -60,7 +57,6 @@ exports.login = async (req, res) => {
         if (!merchant_id) {
             return res.status(500).json({ success: false, message: "Failed to retrieve merchant_id" });
         }
-        console.log('merchant_id', merchant_id)
         // Create OAuth request and response
         const oauthRequest = new Request(req);
         const oauthResponse = new Response(res);
@@ -73,18 +69,16 @@ exports.login = async (req, res) => {
                 }
             }
         });
-        console.log('code', code)
 
         if (!code) {
             return res.status(500).json({ success: false, message: "Failed to generate authorization code" });
         }
 
-        let merchant = await Merchant.findOne({ client_id });
-        console.log('merchant', merchant)
+        let merchant = await Merchant.findOne({ client_id, merchant_id });
         if (merchant) {
             // Document exists, update it
             merchant = await Merchant.findOneAndUpdate(
-                { client_id },
+                { client_id, merchant_id },
                 {
                     merchant_id,
                     merchant_group_id,

@@ -77,16 +77,22 @@ exports.authorizeClient = async (req, res) => {
 
 
 exports.generateToken = async (req, res) => {
+
     try {
         const request = new Request(req);
         const response = new Response(res);
-        oauth.token(request, response).then((token) => {
+
+        oauth.token(request, response).then(async (token) => {
+            const merchantId = req.body.merchant_id;
+
             const expire_time = Math.floor(token.accessTokenExpiresAt.getTime() / 1000); // UNIX timestamp in seconds
             const formattedResponse = {
                 access_token: token.accessToken,
                 refresh_token: token.refreshToken,
                 expire_time: expire_time,
-                id: token.client.id
+                id: token.client.id,
+                merchant_id: merchantId
+
             };
             res.status(200).json(formattedResponse);
         }).catch((err) => {
@@ -98,3 +104,4 @@ exports.generateToken = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+

@@ -4,6 +4,7 @@ const Response = OAuth2Server.Response;
 const Client = require('./Client');
 const Token = require('./Token');
 const AuthCode = require('./AuthCode');
+const Merchant = require('./Merchant');
 
 const oauth = new OAuth2Server({
     model: {
@@ -62,12 +63,22 @@ const oauth = new OAuth2Server({
             return result.deletedCount > 0;
         },
         saveToken: async (token, client, user) => {
+            // console.log('Token:', JSON.stringify(token, null, 2));
+            // console.log('Client:', JSON.stringify(client, null, 2));
+            // console.log('User:', JSON.stringify(user, null, 2));
+            // // Check if req.body exists and has merchant_id
+            const merchant = await Merchant.findOne({ code: token.authorizationCode });
+
+            if (!merchant) {
+                throw new Error(`Merchant ID not found`);
+            }
             const accessToken = await Token.create({
                 client_id: String(client.clientId),
                 user_id: String(user.id), // Ensure user_id is stored here
                 access_token: token.accessToken,
                 refresh_token: token.refreshToken,
-                expire_time: token.accessTokenExpiresAt
+                expire_time: token.accessTokenExpiresAt,
+                merchant_id: merchant.merchant_id
             });
             // console.log(`saveToken - accessToken: ${token.accessToken}, client: ${client.clientId}, user: ${user.id}`);
             return {
@@ -76,9 +87,12 @@ const oauth = new OAuth2Server({
                 refreshToken: accessToken.refresh_token,
                 refreshTokenExpiresAt: token.refreshTokenExpiresAt,
                 client: client,
-                user: user
+                user: {
+                    id: user.id,
+                }
             };
         },
+
         getAccessToken: async (accessToken) => {
             const token = await Token.findOne({ access_token: accessToken });
             if (!token) return null;
@@ -91,7 +105,7 @@ const oauth = new OAuth2Server({
                     clientId: String(client.client_id)
                 },
                 user: {
-                    id: String(token.user_id)
+                    id: String(token.user_id),
                 }
             };
         },
@@ -107,7 +121,7 @@ const oauth = new OAuth2Server({
                     clientId: String(client.client_id)
                 },
                 user: {
-                    id: String(token.user_id)
+                    id: String(token.user_id),
                 }
             };
         },

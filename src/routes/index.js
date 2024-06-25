@@ -55,7 +55,6 @@ router.post('/v1/role_credentials', async (req, res, next) => {
         const request = new Request(req);
         const response = new Response(res);
         const token = await oauth.authenticate(request, response);
-        console.log('token', token)
         req.clientId = token.client.clientId;
         next();
 
@@ -70,7 +69,7 @@ router.post('/v1/merchant_credentials', async (req, res, next) => {
         const request = new Request(req);
         const response = new Response(res);
         const token = await oauth.authenticate(request, response);
-        req.clientId = token.client.clientId;
+        req.accessToken = token.accessToken;
         next();
 
     } catch (error) {
