@@ -75,13 +75,20 @@ exports.authorizeClient = async (req, res) => {
     }
 };
 
-
+// if(request.grant_type === 'authorization_code'){
+//     const old_refresh_token_data = await Token.findOne({ refresh_token: request.refresh_token || '' });
+//     if(old_refresh_token_data){
+//         request.body.merchant_id = old_refresh_token_data.merchant_id
+//     }else{
+//         return res.status(401).json({ success: false, message: 'invalid refresh token' });
+//     }
+// }
 exports.generateToken = async (req, res) => {
-
+    // console.log('req', req)
     try {
         const request = new Request(req);
         const response = new Response(res);
-
+        request.body.merchant_id = req.body.merchant_id;
         oauth.token(request, response).then(async (token) => {
             const merchantId = req.body.merchant_id;
 

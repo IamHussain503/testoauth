@@ -69,7 +69,7 @@ exports.login = async (req, res) => {
                 }
             }
         });
-
+        console.log('code', code)
         if (!code) {
             return res.status(500).json({ success: false, message: "Failed to generate authorization code" });
         }

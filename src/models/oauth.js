@@ -62,23 +62,48 @@ const oauth = new OAuth2Server({
             const result = await AuthCode.deleteOne({ code: code.authorizationCode });
             return result.deletedCount > 0;
         },
+        // saveToken: async (token, client, user) => {
+        //     console.log('Token:', JSON.stringify(token, null, 2));
+
+        //     // Extract merchant_id from the token object or token attributes
+        //     const merchantId = token.merchant_id || token.attributes.merchant_id;
+        //     if (!merchantId) {
+        //         throw new Error(`Merchant ID not found in token`);
+        //     }
+
+        //     const accessToken = await Token.create({
+        //         client_id: String(client.clientId),
+        //         user_id: String(user.id),
+        //         access_token: token.accessToken,
+        //         refresh_token: token.refreshToken,
+        //         expire_time: token.accessTokenExpiresAt,
+        //         merchant_id: merchantId
+        //     });
+
+        //     return {
+        //         accessToken: accessToken.access_token,
+        //         accessTokenExpiresAt: accessToken.expire_time,
+        //         refreshToken: accessToken.refresh_token,
+        //         refreshTokenExpiresAt: token.refreshTokenExpiresAt,
+        //         client: client,
+        //         user: { id: user.id }
+        //     };
+        // },
         saveToken: async (token, client, user) => {
             // console.log('Token:', JSON.stringify(token, null, 2));
             // console.log('Client:', JSON.stringify(client, null, 2));
-            // console.log('User:', JSON.stringify(user, null, 2));
+            console.log('User:', JSON.stringify(user, null, 2));
             // // Check if req.body exists and has merchant_id
-            const merchant = await Merchant.findOne({ code: token.authorizationCode });
-
-            if (!merchant) {
-                throw new Error(`Merchant ID not found`);
-            }
+            // const merchant = await Merchant.findOne({ code: token.authorizationCode });
+            // if (!merchant) {
+            //     throw new Error(`Merchant ID not found`);
+            // }
             const accessToken = await Token.create({
                 client_id: String(client.clientId),
-                user_id: String(user.id), // Ensure user_id is stored here
                 access_token: token.accessToken,
                 refresh_token: token.refreshToken,
                 expire_time: token.accessTokenExpiresAt,
-                merchant_id: merchant.merchant_id
+                merchant_id: String(user.id)
             });
             // console.log(`saveToken - accessToken: ${token.accessToken}, client: ${client.clientId}, user: ${user.id}`);
             return {
@@ -110,6 +135,8 @@ const oauth = new OAuth2Server({
             };
         },
         getRefreshToken: async (refreshToken) => {
+            console.log('refreshToken', refreshToken)
+
             const token = await Token.findOne({ refresh_token: refreshToken });
             if (!token) return null;
             const client = await Client.findOne({ client_id: token.client_id });
